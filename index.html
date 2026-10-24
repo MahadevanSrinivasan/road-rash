@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Road Rash - Sega Genesis 16-Bit Classic</title>
-    <meta name="description" content="Authentic 1991 Sega Genesis Road Rash arcade combat motorcycle racing game rebuilt in TypeScript and Vite with pseudo-3D curve/hill raster road projection, 14 AI rivals, bike shop, police pursuits, and high-speed vehicular combat." />
+    <title>Road Rash (1991) - Sega Genesis 16-Bit Classic</title>
+    <meta name="description" content="Authentic 1991 Sega Genesis Road Rash arcade combat motorcycle racing game rebuilt in TypeScript and Vite with pseudo-3D curve/hill raster road projection, 14 AI rivals, bike shop, police pursuits, YM2612 FM synth soundtrack, and high-speed vehicular combat." />
     <style>
       * {
         box-sizing: border-box;
@@ -13,52 +13,265 @@
         user-select: none;
         -webkit-user-select: none;
       }
+
       body {
-        background-color: #0b0b10;
-        color: #e0e0e0;
-        font-family: 'Courier New', Courier, monospace;
+        background-color: #08090d;
+        color: #e2e8f0;
+        font-family: 'Courier New', Courier, monospace, system-ui;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         min-height: 100vh;
+        overflow-x: hidden;
+        padding: 8px 12px;
+      }
+
+      /* Arcade Cabinet Chassis */
+      #cabinet-wrapper {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 1024px;
+        background: #11141c;
+        border: 3px solid #2b3240;
+        border-radius: 10px;
+        box-shadow:
+          0 0 0 2px #0a0c10,
+          0 12px 48px rgba(0, 0, 0, 0.9),
+          0 0 30px rgba(220, 38, 38, 0.25);
         overflow: hidden;
       }
+
+      /* Arcade Marquee Header */
+      #cabinet-header {
+        width: 100%;
+        background: linear-gradient(180deg, #1f2430 0%, #12151d 100%);
+        border-bottom: 2px solid #333d4d;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .marquee-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .genesis-badge {
+        background: #dc2626;
+        color: #ffffff;
+        font-weight: 900;
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        padding: 3px 8px;
+        border-radius: 3px;
+        border: 1px solid #f87171;
+        box-shadow: 0 0 8px rgba(220, 38, 38, 0.6);
+        text-transform: uppercase;
+      }
+
+      .marquee-title {
+        color: #ffd700;
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        text-shadow: 2px 2px 0px #000, 0 0 10px rgba(255, 215, 0, 0.4);
+      }
+
+      .marquee-subtitle {
+        color: #94a3b8;
+        font-size: 10px;
+        letter-spacing: 1px;
+      }
+
+      /* Cabinet Control Buttons */
+      .header-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .arcade-btn {
+        background: #1e2430;
+        color: #cbd5e1;
+        border: 1px solid #475569;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.15s ease-in-out;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      }
+
+      .arcade-btn:hover {
+        background: #334155;
+        color: #ffffff;
+        border-color: #94a3b8;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+
+      .arcade-btn:active {
+        transform: translateY(1px);
+        background: #0f172a;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+      }
+
+      .arcade-btn.btn-accent {
+        background: #991b1b;
+        color: #fef2f2;
+        border-color: #ef4444;
+      }
+
+      .arcade-btn.btn-accent:hover {
+        background: #b91c1c;
+        border-color: #f87171;
+      }
+
+      /* Game Screen Viewport */
       #game-container {
         position: relative;
-        width: 100vw;
-        height: 100vh;
-        max-width: 1280px;
-        max-height: 896px;
+        width: 100%;
+        aspect-ratio: 640 / 448;
+        max-width: 960px;
+        max-height: 672px;
+        background: #000000;
+        overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #000;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 68, 0, 0.2);
+        border: 2px solid #1a1e28;
       }
+
       canvas#gameCanvas {
         image-rendering: pixelated;
         image-rendering: crisp-edges;
         width: 100%;
         height: 100%;
         object-fit: contain;
-        background-color: #000;
+        background-color: #000000;
       }
-      #ui-overlay {
+
+      /* Retro CRT Scanline & Aperture Grille Overlay */
+      #crt-overlay {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         pointer-events: none;
+        z-index: 25;
+        background:
+          linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
+          linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+        background-size: 100% 3px, 6px 100%;
+        box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.75);
+      }
+
+      /* Footer Controls Legend */
+      #cabinet-footer {
+        width: 100%;
+        background: #0f1218;
+        border-top: 2px solid #232936;
+        padding: 10px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 11px;
+      }
+
+      .controls-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 8px 16px;
+        color: #94a3b8;
+      }
+
+      .control-pill {
+        display: inline-block;
+        background: #1e293b;
+        color: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 3px;
+        border: 1px solid #475569;
+        font-weight: bold;
+      }
+
+      .combat-tips {
+        padding-top: 6px;
+        border-top: 1px dashed #232936;
+        color: #f59e0b;
+        font-size: 10.5px;
+        line-height: 1.4;
+      }
+
+      @media (max-width: 640px) {
+        #cabinet-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .header-controls {
+          width: 100%;
+          justify-content: flex-start;
+        }
+        .marquee-title {
+          font-size: 17px;
+        }
       }
     </style>
   </head>
   <body>
-    <div id="game-container">
-      <canvas id="gameCanvas" width="640" height="448"></canvas>
-      <div id="ui-overlay"></div>
+    <div id="cabinet-wrapper">
+      <!-- Arcade Cabinet Header -->
+      <header id="cabinet-header">
+        <div class="marquee-left">
+          <span class="genesis-badge">SEGA 16-BIT</span>
+          <div>
+            <div class="marquee-title">ROAD RASH</div>
+            <div class="marquee-subtitle">CALIFORNIA RACING CHAMPIONSHIP</div>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <button id="btn-scanlines" class="arcade-btn" title="Toggle CRT Scanline Overlay">CRT: [ON]</button>
+          <button id="btn-audio" class="arcade-btn" title="Toggle FM Synth Audio / SFX">AUDIO: [ON]</button>
+          <button id="btn-touch" class="arcade-btn" title="Toggle Touch Controls Overlay">TOUCH: [OFF]</button>
+          <button id="btn-fullscreen" class="arcade-btn btn-accent" title="Toggle Fullscreen">FULLSCREEN</button>
+        </div>
+      </header>
+
+      <!-- 640x448 Virtual Resolution Screen with CRT Shading -->
+      <main id="game-container">
+        <canvas id="gameCanvas" width="640" height="448"></canvas>
+        <div id="crt-overlay"></div>
+      </main>
+
+      <!-- Sega Genesis Control Pad Legend -->
+      <footer id="cabinet-footer">
+        <div class="controls-grid">
+          <div><span class="control-pill">▲ / W</span> Throttle &nbsp; <span class="control-pill">▼ / S</span> Brake</div>
+          <div><span class="control-pill">◄ / A</span> <span class="control-pill">► / D</span> Steer Left / Right</div>
+          <div><span class="control-pill">Z / J</span> Punch / Weapon &nbsp; <span class="control-pill">X / K</span> Kick</div>
+          <div><span class="control-pill">N / 2x▲</span> Nitrous Boost &nbsp; <span class="control-pill">P / ESC</span> Pause</div>
+        </div>
+        <div class="combat-tips">
+          ⚡ <strong>COMBAT & SURVIVAL:</strong> Ride next to rivals to trade punches and kicks. Repeated strikes can <strong>SNATCH</strong> Billy Clubs, Heavy Steel Chains, and Crowbars right from rivals' hands! Beware of Highway Patrol Officers O'Leary & Garcia — outrun them or fight them before they bust you!
+        </div>
+      </footer>
     </div>
+
+    <!-- Main Game Bootstrap -->
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
